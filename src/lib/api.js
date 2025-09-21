@@ -1,4 +1,4 @@
-// frontend/src/lib/api.js
+// Normaliza la base y evita el doble “//” en las URLs
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
 async function handle(res) {
@@ -63,6 +63,7 @@ export const adminStats = () => api("/api/admin/stats", { headers: authHeader() 
 export const createCheckout = (payload) =>
   api("/api/checkout", { method: "POST", body: JSON.stringify(payload) });
 
+// Aliases
 export const createProduct = adminCreateProduct;
 export const deleteProduct = adminDeleteProduct;
 export const getOrders = adminListOrders;
