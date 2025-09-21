@@ -1,7 +1,6 @@
-// Normaliza la base y evita el doble “//” en las URLs
+// frontend/src/lib/api.js
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
-// helper para lanzar errores con detalle del backend
 async function handle(res) {
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
@@ -20,7 +19,7 @@ export async function api(path, opts = {}) {
   const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
   const p = path.startsWith("/") ? path : `/${path}`;
   const url = `${BACKEND}${p}`;
-  const res = await fetch(url, { ...opts, headers /*, credentials:"include" si usás cookies */ });
+  const res = await fetch(url, { ...opts, headers });
   return handle(res);
 }
 
@@ -64,7 +63,6 @@ export const adminStats = () => api("/api/admin/stats", { headers: authHeader() 
 export const createCheckout = (payload) =>
   api("/api/checkout", { method: "POST", body: JSON.stringify(payload) });
 
-// Aliases por compatibilidad (si los usabas en otros lados)
 export const createProduct = adminCreateProduct;
 export const deleteProduct = adminDeleteProduct;
 export const getOrders = adminListOrders;
