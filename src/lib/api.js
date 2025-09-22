@@ -1,7 +1,6 @@
 // src/lib/api.js
-
 // Base del backend (sin barras duplicadas al final)
-const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
+const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:3001").replace(/\/+$/, "");
 
 // Helper para respuestas HTTP
 async function handle(res) {
@@ -13,7 +12,7 @@ async function handle(res) {
   return ct.includes("application/json") ? res.json() : res.text();
 }
 
-// Header de auth (safe en build/SSR)
+// Header de auth (safe)
 export function authHeader() {
   if (typeof window === "undefined") return {};
   const t = window.localStorage.getItem("cm_token");
@@ -43,8 +42,8 @@ export const me = () =>
 export const getProducts = () =>
   api("/api/products");
 
-export const getProduct = (id) =>
-  api(`/api/products/${encodeURIComponent(id)}`);
+export const getProduct = (slug) =>
+  api(`/api/products/${encodeURIComponent(slug)}`);
 
 /* =============== ADMIN (productos) =============== */
 export const adminCreateProduct = (payload) =>
@@ -78,10 +77,11 @@ export const adminStats = () =>
   api("/api/admin/stats", { headers: authHeader() });
 
 /* ================== CHECKOUT ================== */
+// Envía items + email al backend. El backend convierte centavos a ARS si mandás unit_price_cents.
 export const createCheckout = (payload) =>
   api("/api/checkout", { method: "POST", body: JSON.stringify(payload) });
 
-/* ===== Aliases por compatibilidad si tu UI los usa ===== */
+/* ===== Aliases por compatibilidad ===== */
 export const createProduct = adminCreateProduct;
 export const deleteProduct = adminDeleteProduct;
 export const getOrders = adminListOrders;
