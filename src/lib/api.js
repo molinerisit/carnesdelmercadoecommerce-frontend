@@ -1,4 +1,4 @@
-// Normaliza la base y evita el doble “//” en las URLs
+// frontend/src/lib/api.js
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
 async function handle(res) {
@@ -32,6 +32,9 @@ export const me = () => api("/api/auth/me", { headers: authHeader() });
 // ====== Productos (público) ======
 export const listProducts = () => api("/api/products");
 export const getProductBySlug = (slug) => api(`/api/product/${encodeURIComponent(slug)}`);
+
+// ✅ Alias para compatibilidad con imports antiguos:
+export const getProducts = listProducts;
 
 // ====== Admin Productos ======
 export const adminCreateProduct = (payload) =>
