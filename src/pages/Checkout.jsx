@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { createCheckout } from '../lib/api'
+import { createCheckout } from '../lib/api.js'
 
 export default function Checkout(){
   const [customer, setCustomer] = useState('')

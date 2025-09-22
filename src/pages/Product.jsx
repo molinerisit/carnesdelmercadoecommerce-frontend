@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getProduct } from '../lib/api';
-import { formatARS } from '../lib/format';
+import { getProduct } from '../lib/api.js';
+import { formatARS } from '../lib/format.js';
 
 export default function Product() {
   const { slug } = useParams();

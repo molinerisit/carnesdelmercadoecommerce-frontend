@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { buildContextMessage, waLink } from "../lib/context";
+import { buildContextMessage, waLink } from "../lib/context.js";
 
 export default function Landing() {
   const wa = waLink(buildContextMessage({ page: "/" }));

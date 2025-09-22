@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getProducts } from '../lib/api'
-import { formatARS } from '../lib/format'
+import { getProducts } from '../lib/api.js'
+import { formatARS } from '../lib/format.js'
 
 export default function Shop(){
   const [products, setProducts] = useState([])

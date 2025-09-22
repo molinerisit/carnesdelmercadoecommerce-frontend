@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { formatARS } from '../lib/format'
+import { formatARS } from '../lib/format.js'
 
 export default function Cart(){
   const [cart, setCart] = useState([])

@@ -12,8 +12,10 @@ async function handle(res) {
 }
 
 export function authHeader() {
-  const t = localStorage.getItem("cm_token");
+  if (typeof window === 'undefined') return {};
+  const t = window.localStorage.getItem('cm_token');
   return t ? { Authorization: `Bearer ${t}` } : {};
+}` } : {};
 }
 
 export async function api(path, opts = {}) {

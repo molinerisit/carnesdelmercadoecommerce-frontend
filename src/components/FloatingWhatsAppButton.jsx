@@ -1,5 +1,5 @@
 import React from 'react'
-import { buildContextMessage, waLink } from '../lib/context'
+import { buildContextMessage, waLink } from '../lib/context.js'
 
 export default function FloatingWhatsAppButton(){
   const onClick = () => {

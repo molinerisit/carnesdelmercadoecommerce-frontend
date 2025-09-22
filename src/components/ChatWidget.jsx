@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { buildContextMessage, waLink } from '../lib/context'
+import { buildContextMessage, waLink } from '../lib/context.js'
 
 const SUGGESTIONS = [
   '¿Horarios de atención?',
