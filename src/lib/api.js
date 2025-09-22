@@ -1,4 +1,4 @@
-// Normaliza la base y evita el doble “//”
+// src/lib/api.js
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
 async function handle(res) {
@@ -23,21 +23,21 @@ export async function api(path, opts = {}) {
   return handle(res);
 }
 
-// ====== Auth ======
+// ===== Auth =====
 export const login = (payload) =>
   api("/api/auth/login", { method: "POST", body: JSON.stringify(payload) });
 
 export const me = () => api("/api/auth/me", { headers: authHeader() });
 
-// ====== Productos (público) ======
+// ===== Productos (público) =====
 export const listProducts = () => api("/api/products");
 export const getProductBySlug = (slug) => api(`/api/product/${encodeURIComponent(slug)}`);
 
-// ✅ Aliases para compatibilidad con imports antiguos:
-export const getProducts = listProducts;              // antes se usaba getProducts()
-export const getProduct = getProductBySlug;           // antes se usaba getProduct(slug)
+// Aliases para compatibilidad con código viejo
+export const getProducts = listProducts;
+export const getProduct = getProductBySlug;
 
-// ====== Admin Productos ======
+// ===== Admin Productos =====
 export const adminCreateProduct = (payload) =>
   api("/api/admin/products", {
     method: "POST",
@@ -58,16 +58,16 @@ export const adminDeleteProduct = (id) =>
     headers: authHeader(),
   });
 
-// ====== Pedidos / Reportes ======
+// ===== Pedidos / Reportes =====
 export const adminListOrders = () => api("/api/admin/orders", { headers: authHeader() });
 export const adminExportCsvUrl = () => `${BACKEND}/api/admin/orders/export`;
 export const adminStats = () => api("/api/admin/stats", { headers: authHeader() });
 
-// ====== Checkout ======
+// ===== Checkout =====
 export const createCheckout = (payload) =>
   api("/api/checkout", { method: "POST", body: JSON.stringify(payload) });
 
-// Aliases (por si el código viejo los usa)
+// Aliases (si el código viejo los usa)
 export const createProduct = adminCreateProduct;
 export const deleteProduct = adminDeleteProduct;
 export const getOrders = adminListOrders;
