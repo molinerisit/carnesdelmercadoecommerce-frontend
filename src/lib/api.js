@@ -1,4 +1,4 @@
-// src/lib/api.js
+// Normaliza la base y evita el doble “//”
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
 async function handle(res) {
@@ -33,7 +33,7 @@ export const me = () => api("/api/auth/me", { headers: authHeader() });
 export const listProducts = () => api("/api/products");
 export const getProductBySlug = (slug) => api(`/api/product/${encodeURIComponent(slug)}`);
 
-// Aliases para compatibilidad con código viejo
+// ✅ Aliases de compatibilidad (para no tocar páginas existentes)
 export const getProducts = listProducts;
 export const getProduct = getProductBySlug;
 
@@ -67,7 +67,7 @@ export const adminStats = () => api("/api/admin/stats", { headers: authHeader() 
 export const createCheckout = (payload) =>
   api("/api/checkout", { method: "POST", body: JSON.stringify(payload) });
 
-// Aliases (si el código viejo los usa)
+// Aliases (compat)
 export const createProduct = adminCreateProduct;
 export const deleteProduct = adminDeleteProduct;
 export const getOrders = adminListOrders;
