@@ -1,3 +1,4 @@
+// src/lib/api.js
 // Normaliza la base y evita el doble “//”
 const BACKEND = (import.meta.env.VITE_BACKEND_URL || "http://localhost:8787").replace(/\/+$/, "");
 
