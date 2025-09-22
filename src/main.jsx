@@ -1,71 +1,26 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
-import './styles.css'
-import { me } from './lib/api.js'
-import Landing from './pages/Landing.jsx'
-import Shop from './pages/Shop.jsx'
-import Product from './pages/Product.jsx'
-import Cart from './pages/Cart.jsx'
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
 import Checkout from './pages/Checkout.jsx'
-import Success from './pages/Success.jsx'
-import Failure from './pages/Failure.jsx'
-import Login from './pages/Login.jsx'
-import AdminBot from './pages/AdminBot.jsx'
-import Admin from './pages/Admin.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import ChatWidget from './components/ChatWidget.jsx'
 
-function Nav(){
-  const [isAuthed, setAuthed] = useState(false)
-  useEffect(()=>{ me().then(()=>setAuthed(true)).catch(()=>setAuthed(false)) }, [])
-  const logout = () => { localStorage.removeItem('cm_token'); window.location.href='/' }
+function Home() {
   return (
-    <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="font-bold text-brand-800">Carnes del Mercado</Link>
-        <nav className="flex gap-4 items-center">
-          <Link to="/shop" className="hover:text-brand-700">Tienda</Link>
-          <Link to="/cart" className="hover:text-brand-700">Carrito</Link>
-          {isAuthed ? (<>
-            <Link to="/admin" className="hover:text-brand-700">Admin</Link>
-            <Link to="/dashboard" className="hover:text-brand-700">Dashboard</Link>
-            <button onClick={logout} className="text-sm text-stone-600 hover:text-brand-700">Salir</button>
-          </>) : (<Link to="/login" className="hover:text-brand-700">Login</Link>)}
-        </nav>
-      </div>
-    </header>
+    <main style={{maxWidth: 960, margin: '2rem auto', padding: '0 1rem'}}>
+      <h1>Carnes del Mercado</h1>
+      <p>Demo frontend listo para Checkout.</p>
+      <p><Link to="/checkout">Ir al Checkout</Link></p>
+    </main>
   )
 }
 
-function Protected({ children }){
-  const [ok, setOk] = useState(null)
-  useEffect(()=>{ me().then(()=>setOk(true)).catch(()=>setOk(false)) }, [])
-  if (ok === null) return <main className="max-w-6xl mx-auto px-4 py-6">Cargando…</main>
-  return ok ? children : <Navigate to="/login" replace />
-}
-
-function App(){
-  return (
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
     <BrowserRouter>
-      <Nav />
-      <ChatWidget />
       <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/product/:slug" element={<Product />} />
-        <Route path="/cart" element={<Cart />} />
+        <Route path="/" element={<Home />} />
         <Route path="/checkout" element={<Checkout />} />
-        <Route path="/order-success" element={<Success />} />
-        <Route path="/order-failure" element={<Failure />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<Protected><Admin /></Protected>} />
-        <Route path="/admin/bot" element={<Protected><AdminBot /></Protected>} /> {/* 👈 NUEVA */}
-        <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+        <Route path="*" element={<Home />} />
       </Routes>
-      <footer className="py-10 text-center text-sm text-stone-500">© Carnes del Mercado — Demo</footer>
     </BrowserRouter>
-  )
-}
-
-createRoot(document.getElementById('root')).render(<App />)
+  </React.StrictMode>
+)

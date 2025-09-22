@@ -2,9 +2,8 @@ import React, { useMemo, useState } from "react";
 import { createCheckout } from "../lib/api";
 
 function formatARS(n) {
-  try {
-    return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(n);
-  } catch { return `$${n.toFixed(2)}`; }
+  try { return new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" }).format(n); }
+  catch { return `$${n?.toFixed ? n.toFixed(2) : n}`; }
 }
 
 export default function Checkout() {
@@ -12,81 +11,109 @@ export default function Checkout() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [deliveryMode, setDeliveryMode] = useState("delivery");
+  const [addr, setAddr] = useState({ street: "", number: "", floor: "", apt: "", city: "", province: "", zip: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // demo cart: in real app, leer desde localStorage del carrito existente
   const cart = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("cart") || "[]"); }
     catch { return []; }
   }, []);
 
-  const items = useMemo(() => cart.map(it => ({
-    title: it.name || it.title || "Producto",
-    quantity: Math.max(1, Number(it.quantity || 1)),
-    // Mandamos centavos si tu store guarda en centavos; el backend lo convierte
-    unit_price_cents: Number(it.price_cents ?? (Number(it.price) * 100 || 0)),
-    imageUrl: it.imageUrl || it.image || undefined,
-  })), [cart]);
+  const items = useMemo(() => (cart.length ? cart : [
+    { title: "Milanesa", quantity: 2, unit_price_cents: 19990 },
+    { title: "Asado", quantity: 1, unit_price_cents: 45990 },
+  ]), [cart]);
 
-  const totalARS = useMemo(() => {
-    return items.reduce((acc, it) => acc + (Number(it.unit_price_cents || 0) * it.quantity) / 100, 0);
-  }, [items]);
+  const totalARS = useMemo(() => items.reduce((acc, it) => acc + (Number(it.unit_price_cents || 0) * it.quantity) / 100, 0), [items]);
+
+  const validate = () => {
+    if (!items.length) return "Tu carrito está vacío.";
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return "Ingresá un email válido.";
+    if (deliveryMode === "delivery") {
+      const need = ["street","number","city","province","zip"];
+      for (const k of need) if (!String(addr[k]||"").trim()) return "Completá la dirección: calle, número, ciudad, provincia y código postal.";
+    }
+    return "";
+  };
 
   const onPay = async () => {
-    setError("");
-    if (!cart.length) return setError("Tu carrito está vacío.");
-    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return setError("Ingresá un email válido.");
-
-    setLoading(true);
+    const v = validate();
+    if (v) { setError(v); return; }
+    setError(""); setLoading(true);
     try {
       const resp = await createCheckout({
         email,
-        items, // el backend recibirá unit_price_cents y lo convertirá
-        meta: { name, phone, notes },
+        items,
+        delivery: { mode: deliveryMode, address: deliveryMode === "delivery" ? addr : null },
+        customer: { name, phone, notes },
       });
       const url = resp.init_point || resp.sandbox_init_point || resp.url;
       if (!url) throw new Error("No se recibió URL de pago");
       window.location.href = url;
     } catch (e) {
-      setError(String(e.message || e));
-    } finally {
-      setLoading(false);
-    }
+      setError(String(e?.message || e));
+    } finally { setLoading(false); }
   };
 
   return (
-    <main className="max-w-2xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+    <main style={{maxWidth: 720, margin: '2rem auto', padding: '0 1rem'}}>
+      <h1>Checkout</h1>
 
-      <section className="mb-6">
-        <h2 className="font-semibold mb-2">Tu pedido</h2>
-        <div className="divide-y rounded border">
+      <section style={{marginBottom: 16}}>
+        <h2>Tu pedido</h2>
+        <div style={{border: '1px solid #ddd', borderRadius: 8}}>
           {items.map((it, idx) => (
-            <div key={idx} className="flex items-center justify-between p-3">
+            <div key={idx} style={{display:'flex', justifyContent:'space-between', padding: 8, borderBottom:'1px solid #eee'}}>
               <div>
-                <div className="font-medium">{it.title}</div>
-                <div className="text-sm text-gray-600">x{it.quantity}</div>
+                <div style={{fontWeight: 600}}>{it.title}</div>
+                <div style={{fontSize: 12, color:'#555'}}>x{it.quantity}</div>
               </div>
-              <div className="text-right">{formatARS((it.unit_price_cents * it.quantity) / 100)}</div>
+              <div>{formatARS((it.unit_price_cents * it.quantity) / 100)}</div>
             </div>
           ))}
-          {!items.length && <div className="p-3 text-gray-500">No hay items en el carrito.</div>}
-          <div className="flex items-center justify-between p-3 bg-gray-50 font-semibold">
-            <div>Total</div>
-            <div>{formatARS(totalARS)}</div>
+          <div style={{display:'flex', justifyContent:'space-between', padding: 8, background:'#fafafa', fontWeight:600}}>
+            <div>Total</div><div>{formatARS(totalARS)}</div>
           </div>
         </div>
       </section>
 
-      <section className="mb-6 grid grid-cols-1 gap-3">
-        <input className="input" placeholder="Email (requerido)" value={email} onChange={e=>setEmail(e.target.value)} />
-        <input className="input" placeholder="Nombre (opcional)" value={name} onChange={e=>setName(e.target.value)} />
-        <input className="input" placeholder="Teléfono (opcional)" value={phone} onChange={e=>setPhone(e.target.value)} />
-        <textarea className="textarea" placeholder="Notas para el pedido (opcional)" value={notes} onChange={e=>setNotes(e.target.value)} />
+      <section style={{marginBottom: 16}}>
+        <input placeholder="Email (requerido)" value={email} onChange={e=>setEmail(e.target.value)} style={{display:'block', width:'100%', padding:8, marginBottom:8}} />
+        <input placeholder="Nombre (opcional)" value={name} onChange={e=>setName(e.target.value)} style={{display:'block', width:'100%', padding:8, marginBottom:8}} />
+        <input placeholder="Teléfono (opcional)" value={phone} onChange={e=>setPhone(e.target.value)} style={{display:'block', width:'100%', padding:8, marginBottom:8}} />
+        <textarea placeholder="Notas del pedido (opcional)" value={notes} onChange={e=>setNotes(e.target.value)} style={{display:'block', width:'100%', padding:8, marginBottom:8}} />
       </section>
 
-      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
-      <button className="btn w-full" disabled={loading || !items.length} onClick={onPay}>
+      <section style={{marginBottom: 16}}>
+        <h2>Entrega</h2>
+        <div style={{display:'flex', gap:16, marginBottom:8}}>
+          <label><input type="radio" name="delivery" checked={deliveryMode==='delivery'} onChange={()=>setDeliveryMode('delivery')} /> Envío a domicilio</label>
+          <label><input type="radio" name="delivery" checked={deliveryMode==='pickup'} onChange={()=>setDeliveryMode('pickup')} /> Retiro en tienda</label>
+        </div>
+        {deliveryMode === "delivery" && (
+          <div style={{display:'grid', gap:8}}>
+            <div style={{display:'grid', gap:8, gridTemplateColumns:'2fr 1fr'}}>
+              <input placeholder="Calle" value={addr.street} onChange={e=>setAddr({...addr, street: e.target.value})} />
+              <input placeholder="Número" value={addr.number} onChange={e=>setAddr({...addr, number: e.target.value})} />
+            </div>
+            <div style={{display:'grid', gap:8, gridTemplateColumns:'1fr 1fr'}}>
+              <input placeholder="Piso (opcional)" value={addr.floor} onChange={e=>setAddr({...addr, floor: e.target.value})} />
+              <input placeholder="Depto (opcional)" value={addr.apt} onChange={e=>setAddr({...addr, apt: e.target.value})} />
+            </div>
+            <div style={{display:'grid', gap:8, gridTemplateColumns:'1fr 1fr 1fr'}}>
+              <input placeholder="Ciudad" value={addr.city} onChange={e=>setAddr({...addr, city: e.target.value})} />
+              <input placeholder="Provincia" value={addr.province} onChange={e=>setAddr({...addr, province: e.target.value})} />
+              <input placeholder="Código Postal" value={addr.zip} onChange={e=>setAddr({...addr, zip: e.target.value})} />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {error && <p style={{color:'#b00020', marginBottom:8}}>{error}</p>}
+      <button onClick={onPay} disabled={loading || !items.length} style={{width:'100%', padding:12, fontWeight:600}}>
         {loading ? "Redirigiendo…" : "Pagar con Mercado Pago"}
       </button>
     </main>
